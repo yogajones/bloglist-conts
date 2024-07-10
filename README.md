@@ -52,6 +52,16 @@ For the SECRET, any random string will do.
 
 `localhost:8080`
 
+## Running in production mode with Docker
+
+1. In the project root, run
+
+`docker compose -f docker-compose.yml up`
+
+2. Navigate to
+
+`localhost:8080`
+
 ## Technologies Used
 
 The app uses the MERN (MongoDB, Express, React, Node.js) stack.
