@@ -1,6 +1,4 @@
 # BlogList App
-
-Deployed with Render: https://bloglist-zniw.onrender.com/blogs
  
 The BlogList App allows logged-in users to save, view and comment on blogs they find interesting.
 
@@ -44,11 +42,15 @@ For the SECRET, any random string will do.
 
 `localhost:3003`
 
-## Deployment
+## Running in development mode with Docker
 
-The repository contains a Dockerfile for a swift deployment.
+1. In the project root, run
 
-Currently, the BlogList App is deployed to Render at https://bloglist-zniw.onrender.com
+`docker compose -f docker-compose.dev.yml up`
+
+2. Navigate to
+
+`localhost:8080`
 
 ## Technologies Used
 

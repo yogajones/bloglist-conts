@@ -23,9 +23,9 @@ beforeEach(async () => {
   await Blog.insertMany(helper.initialBlogs);
 
   await User.deleteMany({});
-  await api.post("/api/users").send({ username: "dumdum", password: "dummy" });
+  await api.post("/users").send({ username: "dumdum", password: "dummy" });
   const res = await api
-    .post("/api/login")
+    .post("/login")
     .send({ username: "dumdum", password: "dummy" });
   const token = res.body.token;
   authHeader = "Bearer " + token;
@@ -33,19 +33,19 @@ beforeEach(async () => {
 
 // BLOG-RELATED TESTS START HERE
 
-describe("GET /api/blogs", () => {
+describe("GET /blogs", () => {
   test("returns JSON content", async () => {
     await api
-      .get("/api/blogs")
+      .get("/blogs")
       .expect(200)
       .expect("Content-Type", /application\/json/);
   });
   test("returns the correct number of blogs", async () => {
-    const response = await api.get("/api/blogs");
+    const response = await api.get("/blogs");
     assert.strictEqual(response.body.length, helper.initialBlogs.length);
   });
   test("returns blogs with an id field", async () => {
-    const response = await api.get("/api/blogs");
+    const response = await api.get("/blogs");
     const blogs = response.body;
 
     blogs.forEach((blog) => {
@@ -54,7 +54,7 @@ describe("GET /api/blogs", () => {
   });
 });
 
-describe("POST /api/blogs", () => {
+describe("POST /blogs", () => {
   const newBlog = {
     title: "Titles and such",
     author: "A. Author",
@@ -63,24 +63,24 @@ describe("POST /api/blogs", () => {
   };
   test("increases the number of returned blogs by one", async () => {
     await api
-      .post("/api/blogs")
+      .post("/blogs")
       .set("Authorization", authHeader)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
-    const response = await api.get("/api/blogs");
+    const response = await api.get("/blogs");
     assert.strictEqual(response.body.length, helper.initialBlogs.length + 1);
   });
   test("adds the proper content to the database", async () => {
     await api
-      .post("/api/blogs")
+      .post("/blogs")
       .set("Authorization", authHeader)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
-    const response = await api.get("/api/blogs");
+    const response = await api.get("/blogs");
 
     const blogTitles = response.body.map((r) => r.title);
     assert(blogTitles.includes("Titles and such"));
@@ -95,13 +95,13 @@ describe("POST /api/blogs", () => {
       url: "http://www.google.fi/",
     };
     await api
-      .post("/api/blogs")
+      .post("/blogs")
       .set("Authorization", authHeader)
       .send(undefinedLikesBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
-    const response = await api.get("/api/blogs");
+    const response = await api.get("/blogs");
     const savedBlog = response.body.find(
       (b) => b.title === "Where are my likes?",
     );
@@ -112,20 +112,20 @@ describe("POST /api/blogs", () => {
       author: "Lonely Author",
     };
     await api
-      .post("/api/blogs")
+      .post("/blogs")
       .set("Authorization", authHeader)
       .send(blogWithOnlyAuthor)
       .expect(400);
   });
   test("returns 401 if token not in request", async () => {
-    const blogsAtStart = await api.get("/api/blogs");
-    await api.post("/api/blogs").send(newBlog).expect(401);
-    const blogsAtEnd = await api.get("/api/blogs");
+    const blogsAtStart = await api.get("/blogs");
+    await api.post("/blogs").send(newBlog).expect(401);
+    const blogsAtEnd = await api.get("/blogs");
     assert.strictEqual(blogsAtStart.length, blogsAtEnd.length);
   });
 });
 
-describe("DELETE /api/blogs/:id", () => {
+describe("DELETE /blogs/:id", () => {
   test("succesfully deletes existing blog", async () => {
     const newBlog = {
       title: "Titles and such",
@@ -134,7 +134,7 @@ describe("DELETE /api/blogs/:id", () => {
       likes: 0,
     };
     const res = await api
-      .post("/api/blogs")
+      .post("/blogs")
       .set("Authorization", authHeader)
       .send(newBlog)
       .expect(201)
@@ -143,7 +143,7 @@ describe("DELETE /api/blogs/:id", () => {
 
     const blogsAtStart = await helper.blogsInDB();
     await api
-      .delete(`/api/blogs/${blogToDelete.id}`)
+      .delete(`/blogs/${blogToDelete.id}`)
       .set("Authorization", authHeader)
       .expect(204);
     const blogsAtEnd = await helper.blogsInDB();
@@ -157,13 +157,13 @@ describe("DELETE /api/blogs/:id", () => {
     const nonExistingId =
       "ItIsHighlyUnlikelyThatAnIdLikeThisGotGeneratedByMongo";
     await api
-      .delete(`/api/blogs/${nonExistingId}`)
+      .delete(`/blogs/${nonExistingId}`)
       .set("Authorization", authHeader)
       .expect(400);
   });
 });
 
-describe("PUT /api/blogs/:id", () => {
+describe("PUT /blogs/:id", () => {
   test("succesfully updates existing blog", async () => {
     const blogsAtStart = await helper.blogsInDB();
     const usersAtStart = await helper.usersInDB();
@@ -176,13 +176,13 @@ describe("PUT /api/blogs/:id", () => {
     };
 
     await api
-      .put(`/api/blogs/${blogToUpdate.id}`)
+      .put(`/blogs/${blogToUpdate.id}`)
       .set("Authorization", authHeader)
       .send(updatedBlog)
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
-    const response = await api.get("/api/blogs");
+    const response = await api.get("/blogs");
     const returnedBlog = response.body.find((b) => b.id === blogToUpdate.id);
     assert.strictEqual(returnedBlog.likes, likesInStart + 1);
   });
@@ -196,7 +196,7 @@ describe("PUT /api/blogs/:id", () => {
     };
 
     await api
-      .put(`/api/blogs/ItIsHighlyUnlikelyThatAnIdLikeThisGotGeneratedByMongo`)
+      .put(`/blogs/ItIsHighlyUnlikelyThatAnIdLikeThisGotGeneratedByMongo`)
       .set("Authorization", authHeader)
       .send(updatedBlog)
       .expect(400)
@@ -205,10 +205,10 @@ describe("PUT /api/blogs/:id", () => {
 
 // USER-RELATED TESTS START HERE
 
-describe("GET /api/users", () => {
+describe("GET /users", () => {
   test("succesfully returns all users", async () => {
     const response = await api
-      .get("/api/users")
+      .get("/users")
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
@@ -216,7 +216,7 @@ describe("GET /api/users", () => {
   });
 });
 
-describe("POST /api/users", () => {
+describe("POST /users", () => {
   beforeEach(async () => {
     await User.deleteMany({});
     await User.insertMany(helper.initialUsers);
@@ -230,7 +230,7 @@ describe("POST /api/users", () => {
       password: "doodoo",
     };
     await api
-      .post("/api/users")
+      .post("/users")
       .send(newUser)
       .expect(201)
       .expect("Content-Type", /application\/json/);
@@ -247,7 +247,7 @@ describe("POST /api/users", () => {
       password: "root",
     };
     const res = await api
-      .post("/api/users")
+      .post("/users")
       .send(duplicateUsername)
       .expect(400)
       .expect("Content-Type", /application\/json/);
@@ -262,7 +262,7 @@ describe("POST /api/users", () => {
       name: "Dee Dee",
       password: "doodoo",
     };
-    await api.post("/api/users").send(shortUsername).expect(400);
+    await api.post("/users").send(shortUsername).expect(400);
 
     const usersAtEnd = await helper.usersInDB();
     assert.strictEqual(usersAtEnd.length, helper.initialUsers.length);
@@ -283,8 +283,8 @@ describe("POST /api/users", () => {
       password: "d2",
     };
 
-    await api.post("/api/users").send(emptyPassword).expect(400);
-    await api.post("/api/users").send(shortPassword).expect(400);
+    await api.post("/users").send(emptyPassword).expect(400);
+    await api.post("/users").send(shortPassword).expect(400);
 
     const usersAtEnd = await helper.usersInDB();
     assert.strictEqual(usersAtEnd.length, helper.initialUsers.length);

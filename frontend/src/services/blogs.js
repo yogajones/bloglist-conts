@@ -1,5 +1,5 @@
-import axios from "axios";
-const baseUrl = "/api/blogs";
+import axios from "../util/apiClient"
+const baseUrl = "/blogs";
 
 let token = null;
 
